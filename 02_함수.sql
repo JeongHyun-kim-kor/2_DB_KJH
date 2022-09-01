@@ -231,7 +231,7 @@ SELECT TO_CHAR(SYSDATE, 'MM/DD (DY)')  FROM DUAL;
 -- 2022년 09월 01일 (목)
 SELECT TO_CHAR(SYSDATE, 'YYYY"년" MM"월" DD"일" (DY)')FROM DUAL;
 --  날짜 형식이 부적합ㅇ합니다.
--- 년,월,일이 날짜를 나타내는 패턴으로 인식이 안되서 오류 ㅂ라생
+-- 년,월,일이 날짜를 나타내는 패턴으로 인식이 안되서 오류 발생
 --> "" 쌍따옴표 이용해서 단순한 문자로 인식시키면 해결됨
 
 SELECT TO_CHAR(SYSDATE, 'YYYY년 MM월 DD일 (DY)')FROM DUAL;
