@@ -155,18 +155,34 @@ SELECT LAST_DAY(SYSDATE) FROM DUAL;
 
 SELECT LAST_DAY('2022-02-01') FROM DUAL;
 
+
+-- ========================== 0901 3교시 ==========================
+
 -- EXTRACT : 년, 월, 일 정보를 추출하여 리턴
 -- EXTRACT(YEAR FROM 날짜) : 년도만 추출
 -- EXTRACT(MONTH FROM 날짜) : 월만 추출
 -- EXTRACT(DAY FROM 날짜) : 일만 추출
 
+-- EMPLOYEE 테이블에서
+-- 각 사원의 이름, 입사년도, 월 , 일 조회
 
+SELECT EMP_NAME, 
+--	EXTRACT (YEAR FROM HIRE_DATE) 년,
+--	EXTRACT (MONTH FROM HIRE_DATE) 월,
+--	EXTRACT (DAY FROM HIRE_DATE) 일
+--	FROM EMPLOYEE ;
+	EXTRACT (YEAR FROM HIRE_DATE) || '년 ' ||
+	EXTRACT (MONTH FROM HIRE_DATE) || '월 ' ||
+	EXTRACT (DAY FROM HIRE_DATE) || '일' 입사일
+	FROM EMPLOYEE ;
 
 
 ---------------------------------------------------------------------------------
 
 /* 형변환 함수 */
 -- 문자열(CHAR), 숫자(NUMBER), 날짜(DATE) 끼리 형변환 가능
+
+
 
 
 /* 문자열로 변환 */
@@ -178,7 +194,21 @@ SELECT LAST_DAY('2022-02-01') FROM DUAL;
 -- 0 : 숫자 한칸을 의미, 여러 개 작성 시 오른쪽 정렬 + 빈칸 0 추가
 -- L : 현재 DB에 설정된 나라의 화폐 기호
 
+SELECT TO_CHAR(1234) FROM DUAL; -- 1,234 -> '1234'
 
+SELECT TO_CHAR(1234, '99999')  FROM DUAL; -- 왼쪽한칸 비어져잇음 ' 1234'
+SELECT TO_CHAR(1234, '00000')  FROM DUAL; -- '01234'
+
+SELECT TO_CHAR(EXTRACT (MONTH FROM HIRE_DATE), '00' ) || '월'  -- 07월 (앞자리에 0)
+FROM EMPLOYEE ;
+
+SELECT TO_CHAR(1000000)  FROM DUAL; -- '1000000'
+
+SELECT TO_CHAR(1000000, '9,999,999') || '원'  FROM DUAL; -- '1,000,000원'
+
+SELECT TO_CHAR(1000000, 'L9,999,999') || '원'  FROM DUAL; -- '원화 1,000,000원'
+
+SELECT TO_CHAR(1000000, '$9,999,999')   FROM DUAL; -- '$ 1,000,000'
 
 -- <날짜 변환 시 포맷 패턴>
 -- YYYY : 년도 / YY : 년도 (짧게)
@@ -189,8 +219,22 @@ SELECT LAST_DAY('2022-02-01') FROM DUAL;
 -- MI : 분  /  SS : 초
 -- DAY : 요일(전체)  /  DY : 요일(요일명만 표시)
 
+SELECT SYSDATE FROM DUAL; -- 2022-09-01 11:20:50.000
 
+-- 2022-09-01 11:20:50.000 
+-- >>> 2022/09/01 11:20:50 목요일
+SELECT TO_CHAR(SYSDATE, 'YYYY/MM/DD HH24:MI:SS DAY')  FROM DUAL;
 
+-- 09/01 (목)
+SELECT TO_CHAR(SYSDATE, 'MM/DD (DY)')  FROM DUAL;
+
+-- 2022년 09월 01일 (목)
+SELECT TO_CHAR(SYSDATE, 'YYYY"년" MM"월" DD"일" (DY)')FROM DUAL;
+--  날짜 형식이 부적합ㅇ합니다.
+-- 년,월,일이 날짜를 나타내는 패턴으로 인식이 안되서 오류 ㅂ라생
+--> "" 쌍따옴표 이용해서 단순한 문자로 인식시키면 해결됨
+
+SELECT TO_CHAR(SYSDATE, 'YYYY년 MM월 DD일 (DY)')FROM DUAL;
 --------------------------------------------------------------------------------
 
 /* 날짜로 변환 TO_DATE */
@@ -198,7 +242,28 @@ SELECT LAST_DAY('2022-02-01') FROM DUAL;
 -- TO_DATE(숫자형 데이터, [포맷]) : 숫자형 데이터를 날짜로 변경
 --> 지정된 포맷으로 날짜를 인식함
 
+SELECT SYSDATE FROM DUAL;
+ 
+SELECT TO_DATE('2022-09-02') FROM DUAL; -- 문자열로 인식 -> 날짜형으로
 
+SELECT TO_DATE(20220902) FROM DUAL; -- 숫자열로 인식 -> 날짜형으로
+
+SELECT TO_DATE('220901 113255') FROM DUAL;
+SELECT TO_DATE('220901 113255', 'YYMMDD HH24MISS') FROM DUAL;
+-- ORA-01861: 리터럴이 형식 문자열과 일치하지 않음
+--> 패턴을 적용해서 작성된 문자열의 각 문자가 어떤 날짜 형식인지 인식시킴
+
+
+-- EMPLOYEE 테이블에서 각 직원이 태어난 생년월일(1990년 05월 13알) 조회
+SELECT EMP_NAME, 
+TO_CHAR(TO_DATE(SUBSTR(EMP_NO,1, INSTR(EMP_NO, '-') -1), 'RRMMDD' ), 'YYYY"년" MM"월" DD"일"') AS 생년월일
+FROM EMPLOYEE ;
+
+-- Y 패턴 : 현재 세기(21세기 == 20XX년 == 2000년대)
+-- R 패턴 : 1세기를 기준으로 절반(50년) 이상인 경우 이전 세기(1900년대)
+--                           절반(50년) 미만인 경우 이전 세기(2000년대)
+SELECT TO_DATE('510505',  'YYMMDD')  FROM DUAL; -- 2051-05-05 00:00:00.000
+SELECT TO_DATE('510505',  'RRMMDD')  FROM DUAL; -- 1951-05-05 00:00:00.000
 ---------------------------------------------------------------------------------
 
 /* 숫자 형변환 */
