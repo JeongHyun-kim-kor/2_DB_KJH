@@ -77,16 +77,20 @@ FROM EMPLOYEE
 WHERE DEPT_CODE IN ('D5', 'D6')
 GROUP BY DEPT_CODE ;
 
+--SELECT ROUND(AVG(SALARY)), COUNT(*)
+--FROM EMPLOYEE 
+--WHERE DEPT_CODE IN ('D5', 'D6')
+
+
 -- EMPLOYEE 테이블에서 직급 별 2000년도 이후 입사자들의 급여 합을 조회( 직급코드 오름차순)
 
 SELECT JOB_CODE, SUM(SALARY) 
 FROM EMPLOYEE
 --WHERE EXTRACT (YEAR FROM HIRE_DATE) >= 2000
--- 2) HIRE_DATE >= '2000-01-01'
--- 3) TO_NUMBER(TO_CHAR(HIRE_DATE, 'YYYY'), 1, 4)) >= 2000
--- TO NUMBER(TO_CHAR(HIRE_DATE, 'YYYY')) >= 2000
+--2) WHERE HIRE_DATE >= '2000-01-01'
+--3) WHERE TO_NUMBER(TO_CHAR(HIRE_DATE, 'YYYY')) >= 2000
 GROUP BY JOB_CODE 
-ORDER BY JOB_CODE  ASC;
+ORDER BY JOB_CODE ASC;
 
 --------------------
 ---------------------------------------------------------------------------------------------------------------------
@@ -134,6 +138,11 @@ FROM EMPLOYEE
 GROUP BY DEPT_CODE 
 HAVING AVG(SALARY) >= 3000000  --> DEPT_CODE 그룹 중 급여 평ㅇ균이 300만이상인 그룹만 남음
 ORDER BY DEPT_CODE;
+
+SELECT DEPT_CODE, AVG(SALARY)
+FROM EMPLOYEE
+GROUP BY DEPT_CODE
+ORDER BY DEPT_CODE ASC;
 
 -- EMPLOYEE 테이블에서 직급별 인원수가 5명 이하인 직급코드, 인원 수 조회
 SELECT JOB_CODE , COUNT(*)
