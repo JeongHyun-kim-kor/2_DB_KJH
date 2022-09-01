@@ -410,3 +410,28 @@ WHERE BONUS IS NOT NULL; -- 9명
 
 SELECT COUNT(BONUS) FROM EMPLOYEE ; -- 9가 나옴
 -- COUNT를 셀건데 기준 컬럼이 BONUS 이다.(NULL을 제외한 실제 값이 기록된 행 카운트)
+
+-- ========================== 0901 5교시 ==========================
+
+SELECT DISTINCT DEPT_CODE FROM EMPLOYEE; -- 7
+SELECT COUNT(DISTINCT DEPT_CODE) FROM EMPLOYEE; -- 6  (ㅜNULL 제외)
+-- COUNT(컬럼명)에 의해 NULL을 제외한 실제값이 있는 행의 개수만 조회
+
+-- EMPLOYEE 테이블에서 성별이 남성인 사원의 수 조회
+SELECT COUNT(*)
+FROM EMPLOYEE
+WHERE SUBSTR(EMP_NO, 8, 1) = '1';
+
+SELECT SUM(DECODE(SUBSTR(EMP_NO, 8, 1), '1', 1 ,0) ) -- 주민등록번호 뒷자리 첫재짜리를 구해
+-- 뒷자리가 1이면 1 아니면 0 출력   '1' \ 남성 '2' = 여성
+FROM EMPLOYEE ;
+
+
+
+
+
+
+
+
+
+
