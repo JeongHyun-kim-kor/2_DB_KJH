@@ -114,9 +114,6 @@ ORDER BY DEPT_CODE, JOB_CODE DESC;
 
 
 --------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------
-
-
 -- * HAVING 절 : 그룹함수로 구해 올 그룹에 대한 조건을 설정할 때 사용
 -- HAVING 컬럼명 | 함수식 비교연산자 비교값
 
@@ -150,6 +147,91 @@ FROM EMPLOYEE
 GROUP BY JOB_CODE 
 HAVING COUNT(*) <= 5 -- HAVING 절에는 그룹함수가 반드시 작성된다!
 ORDER BY JOB_CODE ASC;
+
+-- ========================== 0902 1교시 ==========================
+
+-- 집계함수(ROLLUP, CUBE)
+-- 그룹 별 산출 결과 값의 집계를 계산하는 함수
+-- (그룹 별로 중간 집계 결과를 추가)
+-- GROUP BY절에만 사용할 수 있는 함수!
+
+-- ROLLUP : GROUP BY절에서 가장 먼저 작성된 컬럼의 중간 집계를 처리하는 함수
+
+SELECT DEPT_CODE, JOB_CODE, COUNT(*)
+FROM EMPLOYEE
+GROUP BY ROLLUP(DEPT_CODE , JOB_CODE) 
+ORDER BY 1;
+
+
+-- CUBE :  @@@@
+
+-----------------------------------------------------------------------------------
+
+/* 집합 연산자(SET OPERATOR) 
+ 
+- 여러 SELECT의 결과(RESULT SET)를 하나의 결과로 만드는 연산자
+
+- UNION (합집합) : 두 SELECT의 결과를 하나로 합침(단, 중복은 한 번만 작성)
+
+- UNION ALL : UNION + INTERSECT
+			  합집합에서 중복 부분 제거 안함
+			  
+- MINUS(차집합) : A에서 A,B 교집합 부분을 제거하고 조회
+
+INTERSECT??
+
+*/
+
+-- 부서 코드가 'D5'인 사원의 사번, 이름, 부서코드 , 급여
+SELECT EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+FROM EMPLOYEE
+WHERE DEPT_CODE = 'D5'
+UNION
+--UNION ALL
+--INTERSECT 
+--MINUS 
+-- 급여가 300만 초과인 사원의 사번, 이름, 부서코드, 급여
+SELECT EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+FROM EMPLOYEE
+WHERE SALARY > 3000000;
+
+-- (주의사항!) : 집합 연산자를 사용하기 위한 SELECT문들은
+-- 조회하는 컬럼의 타입, 개수가 모두 동일해야 한다!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
