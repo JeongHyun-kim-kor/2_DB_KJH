@@ -199,6 +199,10 @@ WHERE SALARY > 3000000;
 -- 조회하는 컬럼의 타입, 개수가 모두 동일해야 한다!
 
 
+-- 서로 다른 테이블이지만 컬럼의 타입, 개수만 일치하면 집합 연산자 사용 가능!
+SELECT EMP_ID,EMP_NAME,FROM EMPLOYEE 
+UNION
+SELECT DEPT_OD, DEPT_TITLE FROM DEPARTMENT;
 
 
 
