@@ -29,15 +29,28 @@ VALUES ('900', '장채현','901230-2345678', 'jang_ch@kh.or.kr',
 		'01012341234', 'D1', 'J7', 'S3', 4300000 , 0.2 , 200, 
 		SYSDATE, NULL, 'N');
 	
-SELECT * FROM EMPLOYEE2  WHERE EMP_ID = '900';
+SELECT * FROM EMPLOYEE2  
+WHERE EMP_ID = '900';
+
+DELETE FROM EMPLOYEE2 e 
+WHERE EMP_ID = '900';
+
+COMMIT;
         
 ---------------------------------------
 
 -- 2)  INSERT INTO 테이블명(컬럼명, 컬럼명, 컬럼명,...)
 -- VALUES (데이터1, 데이터2, 데이터3, ...);
 -- 테이블에 내가 선택한 컬럼에 대한 값만 INSERT할 때 사용
--- 선택안된 컬럼은 값이 NULL이 들어감
+-- 선택안된 컬럼은 값이 NULL이 들어감 (DEFAULT 존재 시 DEFAULT 값으로 삽입됨)
 
+INSERT INTO EMPLOYEE2(EMP_ID, EMP_NAME, EMP_NO, EMAIL, PHONE, 
+                      DEPT_CODE, JOB_CODE, SAL_LEVEL, SALARY)
+VALUES('900', '장채현', '901123-2345678', 'jang_ch@kh.or.kr', '01012341234',
+       'D1', 'J7', 'S3', 4300000);  
+
+ SELECT * FROM EMPLOYEE2 e 
+ WHERE EMP_ID ='900';
 
 ---------------------------------------
 
@@ -50,6 +63,21 @@ CREATE TABLE EMP_01(
 
 
 SELECT * FROM EMP_01;
+
+SELECT EMP_ID, EMP_NAME,  DEPT_TITLE
+FROM EMPLOYEE2 
+LEFT JOIN DEPARTMENT2 ON (DEPT_CODE = DEPT_ID);
+
+
+-- 서브쿼리(SELECT) 결과를 EMP_01 테이블에 INSERT
+--> SELECT 조회 결과의 데이터 타입, 컬럼개수가
+-- INSERT 하려는 테이블의 컬럼과 일치해야함
+-- (데이터 타입 자동 형변환이 적용됨)
+INSERT INTO EMP_01
+(SELECT EMP_ID, EMP_NAME,  DEPT_TITLE
+ FROM EMPLOYEE2 
+ LEFT JOIN DEPARTMENT2 ON (DEPT_CODE = DEPT_ID));
+
 
 --------------------------------------------------------------------------------------------------------------------
 
