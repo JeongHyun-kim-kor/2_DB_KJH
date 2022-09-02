@@ -272,24 +272,67 @@ WHERE E1.MANAGER_ID = E2.EMP_ID(+) ; --(LEFT 조인)
 
 ---------------------------------------------------------------------------------------------------------------
 
+-- ========================== 0902 4교시 ==========================
+
+
 -- 6. 자연 조인(NATURAL JOIN)
 -- 동일한 타입과 이름을 가진 컬럼이 있는 테이블 간의 조인을 간단히 표현하는 방법
 -- 반드시 두 테이블 간의 동일한 컬럼명, 타입을 가진 컬럼이 필요
 --> 없을 경우 교차조인이 됨.
 
+SELECT EMP_NAME, JOB_NAME
+FROM EMPLOYEE
+--JOIN JOB USING(JOB_CODE);
+NATURAL JOIN JOB;
+
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE 
+NATURAL JOIN DEPARTMENT ;
+--> 잘못 조인하면 CROSS JOIN 결과 조회
 
 ---------------------------------------------------------------------------------------------------------------
 
 -- 7. 다중 조인
 -- N개의 테이블을 조회할 때 사용  (순서 중요!)
 
--- ANSI 표준
+-- 사원 이름, 부서명, 지역명 조회
+--> EMPLOYEE, DEPARTMENT, LOCATION  [테이블]
 
+-- ANSI 표준
+SELECT EMP_NAME, DEPT_TITLE, LOCAL_NAME
+FROM EMPLOYEE
+JOIN DEPARTMENT ON(DEPT_CODE = DEPT_ID)
+JOIN LOCATION ON(LOCATION_ID = LOCAL_CODE);
+
+SELECT *
+FROM EMPLOYEE 
+JOIN DEPARTMENT ON(DEPT_CODE = DEPT_ID);
+JOIN LOCATION ON(LOCATION_ID = LOCAL_CODE);
+--> JOIN은 위에서 아래로 차례대로 진행
+--> 다중 조인 시 앞에서 조인된 결과에 새로운 테이블 내용을 조인하는 것
+
+
+-- 순서 오류!
+SELECT *
+FROM EMPLOYEE 
+JOIN LOCATION ON(LOCATION_ID = LOCAL_CODE)
+JOIN DEPARTMENT ON(DEPT_CODE = DEPT_ID);
+--  "LOCATION_ID": 부적합한 식별자
+--> EMPLOYEE 테이블에 LOCATION_ID 컬럼이 없어서 오류 발생
+--> 해결 방법 : DEPARTMENT와 LOCATION 조인 순서를 바꿔서
+--				EMPLOYEE 와 DEPARTMENT가 조인된 결과를 먼저 만들어
+--				LOCATION_ID 컬럼이 존재할 수 있도록 만든다.
 
 -- 오라클 전용
+SELECT EMP_NAME, DEPT_TITLE, LOCAL_NAME
+FROM EMPLOYEE, DEPARTMENT , LOCATION 
+WHERE DEPT_CODE = DEPT_ID -- EMPLOYEE + DEPARTMENT 조인 먼저
+AND LOCATION_ID = LOCAL_CODE; -- (EMPLOYEE+ DEPARTMENT) + LOCATION 조인
 
 
 -- 조인 순서를 지키지 않은 경우(에러발생)
+
+
 
 
 
@@ -300,9 +343,24 @@ WHERE E1.MANAGER_ID = E2.EMP_ID(+) ; --(LEFT 조인)
 
 -- ANSI
 
+SELECT EMP_ID, EMP_NAME, JOB_NAME, DEPT_TITLE, LOCAL_NAME, SALARY
+FROM EMPLOYEE 
+JOIN JOB USING(JOB_CODE)
+JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+JOIN LOCATION ON (LOCAL_CODE = LOCATION_ID)
+WHERE JOB_NAME ='대리'
+AND LOCAL_NAME LIKE 'ASIA%';
+
+
 -- 오라클 전용
 
-
+SELECT EMP_ID, EMP_NAME, JOB_NAME , DEPT_TITLE, LOCAL_NAME, SALARY
+FROM EMPLOYEE E, JOB J, DEPARTMENT  , LOCATION
+WHERE E.JOB_CODE = J.JOB_CODE 
+AND DEPT_CODE = DEPT_ID
+AND LOCATION_ID = LOCAL_CODE
+AND JOB_NAME = '대리'
+AND LOCAL_NAME LIKE 'ASIA%';
 
 
 ---------------------------------------------------------------------------------------------------------------
@@ -313,8 +371,11 @@ WHERE E1.MANAGER_ID = E2.EMP_ID(+) ; --(LEFT 조인)
 -- 1. 주민번호가 70년대 생이면서 성별이 여자이고, 성이 '전'씨인 직원들의 
 -- 사원명, 주민번호, 부서명, 직급명을 조회하시오.
 
-      
-      
+SELECT EMP_NAME, EMP_NO, DEPT_TITLE, JOB_CODE
+FROM EMPLOYEE
+JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+WHERE 
+
 -- 2. 이름에 '형'자가 들어가는 직원들의 사번, 사원명, 부서명을 조회하시오.
 
 
