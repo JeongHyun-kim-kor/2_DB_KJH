@@ -150,6 +150,7 @@ WHERE E.JOB_CODE = J.JOB_CODE;
  */
 ---------------------------------------------------------------------------------------------------------------
 
+-- ========================== 0902 3교시 ==========================
 
 -- 2. 외부 조인(OUTER JOIN)
 
@@ -164,37 +165,67 @@ FROM EMPLOYEE
 
 -- 1) LEFT [OUTER] JOIN  : 합치기에 사용한 두 테이블 중 왼편에 기술된 테이블의 
 -- 컬럼 수를 기준으로 JOIN
+--> 왼편에 작성된 테이블의 모든 행이 결과에 포함되어야 한다.
+
 -- ANSI 표준
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE LEFT JOIN DEPARTMENT 
+ON (DEPT_CODE = DEPT_ID); --23행(하동운, 이오리 포함)
 
 
 
 -- 오라클 구문
-
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE , DEPARTMENT 
+WHERE DEPT_CODE  = DEPT_ID(+); --(INNER JOIN)
+--    EMPLOYEE     DEPARTMENT
+-- 오른쪽을 왼쪽에 
+-- 반대쪽 테이블 컬럼에 (+)기호를 작성해야 된다!
 
 
 -- 2) RIGHT [OUTER] JOIN : 합치기에 사용한 두 테이블 중 
 -- 오른편에 기술된 테이블의  컬럼 수를 기준으로 JOIN
+
 -- ANSI 표준
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE RIGHT JOIN DEPARTMENT
+ON (DEPT_CODE = DEPT_ID);
+-- 3개 부서가 포함이 안됐다(DEPT_TITLE에는 9개 행이 있음)
 
 
 -- 오라클 구문
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE ,DEPARTMENT
+WHERE DEPT_CODE(+) = DEPT_ID;
 
 -- 3) FULL [OUTER] JOIN   : 합치기에 사용한 두 테이블이 가진 모든 행을 결과에 포함
 -- ** 오라클 구문은 FULL OUTER JOIN을 사용 못함
 
 -- ANSI 표준
 
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE 
+FULL JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID);
 
+-- 오라클(안됨)
 
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE , DEPARTMENT 
+WHERE DEPT_CODE(+) = DEPT_ID(+);
+-- ORA-01468: outer-join된 테이블은 1개만 지정할 수 있습니다
 
 
 
 ---------------------------------------------------------------------------------------------------------------
 
 -- 3. 교차 조인(CROSS JOIN == CARTESIAN PRODUCT)
---  조인되는 테이블의 각 행들이 모두 매핑된 데이터가 검색되는 방법(곱집합)
+--  조인되는 테이블의 각 행들이 모두 매핑된 데이터가 검색되는 방법(곱집합) = 모든 경우의 수
+--> JOIN구문을 잘못 작성하는 경우 CROSS JOIN의 결과가 조회됨
+SELECT EMP_NAME, DEPT_TITLE
+FROM EMPLOYEE 
+CROSS JOIN DEPARTMENT;
 
-
+-- @ 필기 추가?
 
 ---------------------------------------------------------------------------------------------------------------
 
@@ -203,20 +234,40 @@ FROM EMPLOYEE
 -- '='(등호)를 사용하지 않는 조인문
 --  지정한 컬럼 값이 일치하는 경우가 아닌, 값의 범위에 포함되는 행들을 연결하는 방식
 
+SELECT * FROM SAL_GRADE ;
 
+SELECT EMP_NAME,SAL_LEVEL FROM EMPLOYEE ;
+
+-- 사원의 급여에 따른 급여 등급 파악하기
+SELECT EMP_NAME, SALARY, SAL_GRADE.SAL_LEVEL
+FROM EMPLOYEE 
+JOIN SAL_GRADE ON(SALARY BETWEEN MIN_SAL AND MAX_SAL);
+--                기준
+-- 성동일 SALARY 800만 ->SAL_GRADE로 가서 600~1000만 사이 
 ---------------------------------------------------------------------------------------------------------------
+-- 3,4번은 잘 안씀@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 -- 5. 자체 조인(SELF JOIN)
 
 -- 같은 테이블을 조인.
 -- 자기 자신과 조인을 맺음
+-- TIP! 같은 테이블이 2개 있다고 생각하고 JOIN을 진행
 
+
+
+-- 사번, 이름, 사수의 사번, 사수 이름 조회
 -- ANSI 표준
-
-
+SELECT E1.EMP_ID, E1.EMP_NAME,
+		NVL(E1.MANAGER_ID, '없음'), NVL(E2.EMP_NAME,'-')
+FROM EMPLOYEE E1
+LEFT JOIN EMPLOYEE E2 ON (E1.MANAGER_ID  = E2.EMP_ID);
 
 -- 오라클 구문
 
+SELECT E1.EMP_ID, E1.EMP_NAME,
+		NVL(E1.MANAGER_ID, '없음'), NVL(E2.EMP_NAME,'-')
+FROM EMPLOYEE E1, EMPLOYEE E2
+WHERE E1.MANAGER_ID = E2.EMP_ID(+) ; --(LEFT 조인)
 
 
 ---------------------------------------------------------------------------------------------------------------
