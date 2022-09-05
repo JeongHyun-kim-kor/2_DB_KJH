@@ -13,6 +13,7 @@ SELECT * FROM DEPARTMENT2;
 
 --------------------------------------------------------------------------------------------------------------------
 
+
 -- 1. INSERT
 
 -- 테이블에 새로운 행을 추가하는 구문
@@ -81,28 +82,39 @@ INSERT INTO EMP_01
 
 --------------------------------------------------------------------------------------------------------------------
 
+-- ========================== 0905 2교시 ==========================
+
 -- 2. UPDATE
 
 -- 테이블에 기록된 컬럼의 값을 수정하는 구문
 
 -- [작성법]
 -- UPDATE 테이블명 SET 컬럼명 = 바꿀값 [WHERE 컬럼명 비교연산자 비교값];
+--            일괄수정                   / 조건 중요!
 
 -- DEPARTMENT2 테이블에서 DEPT_ID가 'D9'인 부서 정보 조회
-
+	SELECT * FROM DEPARTMENT2
+	WHERE DEPT_ID ='D9';
 
 -- DEPARTMENT2 테이블에서 DEPT_ID가 'D9'인 행의 DEPT_TITLE을 '전략기획팀' 으로 수정
-
-
+	UPDATE  DEPARTMENT2	SET DEPT_TITLE = '전략기획팀'
+	WHERE DEPT_ID = 'D9';
+	
 -- UPDATE 확인
+	SELECT * FROM DEPARTMENT2;
+	
+	COMMIT;
 
 
 
-
--- EMP_SALARY 테이블에서 BONUS를 받지 않는 사원의 
+-- EMPLOYEE2 테이블에서 BONUS를 받지 않는 사원의 
 -- BONUS를 0.1로 변경
-
-
+	UPDATE EMPLOYEE2 
+	SET BONUS = 0.1
+	WHERE BONUS IS NULL; -- 15행 수정
+	
+	SELECT EMP_NAME, BONUS FROM EMPLOYEE2 e 
+	
 
 ---------------------------------------
 
