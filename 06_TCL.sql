@@ -92,6 +92,7 @@ INSERT INTO DEPARTMENT2 VALUES('T3', '개발3팀', 'L2' );
     ROLLBACK TO SP1;
      SELECT * FROM DEPARTMENT2; 
 
+    
  
  
  
