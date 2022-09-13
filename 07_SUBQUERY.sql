@@ -116,19 +116,32 @@ ORDER BY JOB_CODE;
 	
         
  
+				-- 0913 2교시
 -- 부서별(부서가 없는 사람 포함) 급여의 합계 중 가장 큰 부서의
 -- 부서명, 급여 합계를 조회 
 
 -- 1) 부서별 급여 합 중 가장 큰값 조회
-
+	SELECT MAX(SUM(SALARY))
+	FROM EMPLOYEE 
+	GROUP BY DEPT_CODE;
 
 
 -- 2) 부서별 급여합이 17700000인 부서의 부서명과 급여 합 조회
-
+SELECT DEPT_TITLE, SUM(SALARY)
+FROM EMPLOYEE 
+LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+GROUP BY DEPT_TITLE
+HAVING SUM(SALARY) = 17700000;
 
 
 -- 3) >> 위의 두 서브쿼리 합쳐 부서별 급여 합이 큰 부서의 부서명, 급여 합 조회
-
+SELECT DEPT_TITLE, SUM(SALARY)
+FROM EMPLOYEE 
+LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+GROUP BY DEPT_TITLE
+HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
+						FROM EMPLOYEE 
+						GROUP BY DEPT_CODE);
                       
                       
 
@@ -152,30 +165,99 @@ ORDER BY JOB_CODE;
 
 -- 부서별 최고 급여를 받는 직원의 
 -- 이름, 직급, 부서, 급여를 부서 순으로 정렬하여 조회
+	SELECT EMP_NAME, JOB_CODE, DEPT_CODE, SALARY
+	FROM EMPLOYEE 
+	WHERE SALARY IN (SELECT MAX(SALARY)
+					FROM EMPLOYEE
+					GROUP BY DEPT_CODE)
+	ORDER BY DEPT_CODE ;
+	-- 부서별 최고 급여(SUBQUERY)
+	SELECT MAX(SALARY)
+	FROM EMPLOYEE
+	GROUP BY DEPT_CODE ; -- 7행, 1열
 
 
 
 -- 사수에 해당하는 직원에 대해 조회 
 --  사번, 이름, 부서명, 직급명, 구분(사수 / 직원)
 
+	-- * 사수 == MANAGER_ID 컬럼에 작성된 사번
+	
 -- 1) 사수에 해당하는 사원 번호 조회
-
+	SELECT DISTINCT MANAGER_ID
+	FROM EMPLOYEE 
+	WHERE MANAGER_ID IS NOT NULL;
 
 -- 2) 직원의 사번, 이름, 부서명, 직급 조회
+	SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID);
 
+-- 3) 사수에 해당하는 직원에 대한 정보 추출 조회 (이때, 구분은 '사수'로) --구분이란 컬럼추가해야
+	SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME,  '사수' 구분
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	WHERE EMP_ID IN (SELECT DISTINCT MANAGER_ID
+					FROM EMPLOYEE 
+					WHERE MANAGER_ID IS NOT NULL);
 
--- 3) 사수에 해당하는 직원에 대한 정보 추출 조회 (이때, 구분은 '사수'로)
-
-
--- 4) 일반 직원에 해당하는 사원들 정보 조회 (이때, 구분은 '사원'으로)
-
+-- 4) 일반 직원에 해당하는 사원들 정보 조회 (이때, 구분은 '사원'으로)  -- IN 앞에 NOT
+	SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME,  '사원' 구분
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	WHERE EMP_ID NOT IN (SELECT DISTINCT MANAGER_ID
+					FROM EMPLOYEE 
+					WHERE MANAGER_ID IS NOT NULL);
             
 
 -- 5) 3, 4의 조회 결과를 하나로 합침 -> SELECT절 SUBQUERY
 -- * SELECT 절에도 서브쿼리 사용할 수 있음
+	
+	-- 선택함수 사용!
+	--> DECODE(컬럼명, 값1, 1인경우, 값2 , 2인ㄱ경우... , 일치하지 않는 경우) 
+	--> CASE WHEN 조건1 THEN 값1 
+				--조건2 THEN 값2
+				--ELSE 값
+	-- END 별칭
+				
+	SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME,
+	--	CASE WHEN EMP_ID IN(200, 201, 204, 207, 211, 214, 100)
+		CASE WHEN EMP_ID IN(SELECT DISTINCT MANAGER_ID
+							FROM EMPLOYEE 
+							WHERE MANAGER_ID IS NOT NULL)
+			THEN '사수'
+			ELSE '사원' 
+		END  구분	
+		--	'사수'/'사원' 구분
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	ORDER BY EMP_ID;
 
+				
+				
 
+	-- * 집합 연산자(UNION, 합집합 사용 방법 [단순 합침]
 
+	SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME, '사수' 구분
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	WHERE EMP_ID IN (SELECT DISTINCT MANAGER_ID
+					FROM EMPLOYEE 
+					WHERE MANAGER_ID IS NOT NULL)
+	UNION 
+	SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME,  '사원' 구분
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	WHERE EMP_ID NOT IN (SELECT DISTINCT MANAGER_ID
+					FROM EMPLOYEE 
+					WHERE MANAGER_ID IS NOT NULL);
+				
 
 
 -- 대리 직급의 직원들 중에서 과장 직급의 최소 급여보다 많이 받는 직원의
@@ -186,17 +268,37 @@ ORDER BY JOB_CODE;
 --                     가장 작은 값보다 큰가? / 가장 큰 값 보다 작은가?
 
 -- 1) 직급이 대리인 직원들의 사번, 이름, 직급명, 급여 조회
-
+	SELECT EMP_ID, EMP_NAME, JOB_NAME, SALARY
+	FROM EMPLOYEE
+	JOIN JOB USING(JOB_CODE)
+	WHERE JOB_NAME = '대리';
 
 -- 2) 직급이 과장인 직원들 급여 조회
-
+	SELECT SALARY
+	FROM EMPLOYEE
+	JOIN JOB USING(JOB_CODE)
+	WHERE JOB_NAME ='과장';
 
 -- 3) 대리 직급의 직원들 중에서 과장 직급의 최소 급여보다 많이 받는 직원
 -- 3-1) MIN을 이용하여 단일행 서브쿼리를 만듦.
-
+	SELECT EMP_ID, EMP_NAME, JOB_NAME, SALARY
+	FROM EMPLOYEE
+	JOIN JOB USING(JOB_CODE)
+	WHERE JOB_NAME = '대리'
+	AND SALARY > (SELECT MIN(SALARY) -- 3-1)
+				FROM EMPLOYEE
+				JOIN JOB USING(JOB_CODE)
+				WHERE JOB_NAME ='과장');
 
 -- 3-2) ANY를 이용하여 과장 중 가장 급여가 적은 직원 초과하는 대리를 조회
-
+	SELECT EMP_ID, EMP_NAME, JOB_NAME, SALARY
+	FROM EMPLOYEE
+	JOIN JOB USING(JOB_CODE)
+	WHERE JOB_NAME = '대리'
+	AND SALARY > ANY (SELECT SALARY
+					FROM EMPLOYEE
+					JOIN JOB USING(JOB_CODE)
+					WHERE JOB_NAME ='과장');
 
 
 
