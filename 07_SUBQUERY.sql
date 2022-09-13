@@ -300,7 +300,7 @@ HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
 					JOIN JOB USING(JOB_CODE)
 					WHERE JOB_NAME ='과장');
 
-
+	-- 0913 3교시
 
 -- 차장 직급의 급여의 가장 큰 값보다 많이 받는 과장 직급의 직원
 -- 사번, 이름, 직급, 급여를 조회하세요
@@ -309,8 +309,20 @@ HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
 -- > ALL, < ALL : 여러개의 결과값의 모든 값보다 큰 / 작은 경우
 --                     가장 큰 값 보다 크냐? / 가장 작은 값 보다 작냐?
 
-
+		SELECT EMP_ID, EMP_NAME, JOB_NAME, SALARY
+		FROM EMPLOYEE 
+		JOIN JOB USING(JOB_CODE)
+		WHERE JOB_NAME = '과장'
+--		AND SALARY > 2800000;	;
+		AND SALARY > ALL(SELECT SALARY /*MAX(SALARY)*/
+						FROM EMPLOYEE 	
+						JOIN JOB USING(JOB_CODE)
+						WHERE JOB_NAME = '차장');
                       
+		SELECT SALARY
+		FROM EMPLOYEE 
+		JOIN JOB USING(JOB_CODE)
+		WHERE JOB_NAME = '차장';
                       
 -- 서브쿼리 중첩 사용(응용편!)
 
@@ -320,46 +332,133 @@ HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
 -- EMPLOYEE테이블의 DEPT_CODE와 동일한 사원을 구하시오.
 
 -- 1) LOCATION 테이블을 통해 NATIONAL_CODE가 KO인 LOCAL_CODE 조회
-
+	SELECT LOCAL_CODE 
+	FROM LOCATION 
+	WHERE NATIONAL_CODE = 'KO'; -- 'L1'
 
 -- 2)DEPARTMENT 테이블에서 위의 결과와 동일한 LOCATION_ID를 가지고 있는 DEPT_ID를 조회
-
+	SELECT DEPT_ID 
+	FROM DEPARTMENT 
+--	WHERE LOCATION_ID = 'L1';
+	WHERE LOCATION_ID = (SELECT LOCAL_CODE 
+						FROM LOCATION 
+						WHERE NATIONAL_CODE = 'KO');
 
 -- 3) 최종적으로 EMPLOYEE 테이블에서 위의 결과들과 동일한 DEPT_CODE를 가지는 사원을 조회
-
+	SELECT EMP_NAME , DEPT_CODE 
+	FROM EMPLOYEE 
+--	WHERE DEPT_CODE IN ('D1', 'D2', 'D3', 'D4', 'D9');
+	WHERE DEPT_CODE IN (SELECT DEPT_ID  -- 다중행
+						FROM DEPARTMENT 
+						WHERE LOCATION_ID = (SELECT LOCAL_CODE 
+											FROM LOCATION 
+											WHERE NATIONAL_CODE = 'KO')); -- 단일행
                       
 
 
 -----------------------------------------------------------------------
 
--- 3. 다중열 서브쿼리 (단일행 = 결과값은 한 행)
+-- 3. (단일행) 다중열 서브쿼리 (단일행 = 결과값은 한 행)
 --    서브쿼리 SELECT 절에 나열된 컬럼 수가 여러개 일 때
 
 -- 퇴사한 여직원과 같은 부서, 같은 직급에 해당하는
 -- 사원의 이름, 직급, 부서, 입사일을 조회        
 
--- 1) 퇴사한 여직원 조회
+-- 1) 퇴사한 여직원 조회	
+SELECT DEPT_CODE , JOB_CODE  
+FROM EMPLOYEE 
+WHERE ENT_YN = 'Y'
+AND SUBSTR(EMP_NO,8,1) ='2' ; -- 이태림, D8, J6
+	-- RETIREMENT 퇴직
 
 
 -- 2) 퇴사한 여직원과 같은 부서, 같은 직급 (다중 열 서브쿼리)
 
+-- 단일행 서브쿼리 2개를 사용해서 조회
+--> 서브쿼리가 같은 테이블, 같은 조건, 다른 컬럼 조회
+SELECT EMP_NAME, JOB_CODE, DEPT_CODE, HIRE_DATE
+FROM EMPLOYEE 
+--WHERE DEPT_CODE ='D8'
+WHERE DEPT_CODE = (SELECT DEPT_CODE
+					FROM EMPLOYEE 
+					WHERE ENT_YN = 'Y'
+					AND SUBSTR(EMP_NO,8,1) ='2')
+--AND JOB_CODE = 'J6';
+AND JOB_CODE = (SELECT JOB_CODE  
+				FROM EMPLOYEE 
+				WHERE ENT_YN = 'Y'
+				AND SUBSTR(EMP_NO,8,1) ='2');
                                 
 
-
+-- 다중열 서브쿼리
+--> WHERE 절에 작성된 컬럼 순서에 맞게
+-- 서브쿼리의 조회된 컬럼과 비교하여 일치하는 행만 조회
+SELECT EMP_NAME, JOB_CODE, DEPT_CODE, HIRE_DATE
+FROM EMPLOYEE 
+WHERE (DEPT_CODE, JOB_CODE ) = (SELECT DEPT_CODE, JOB_CODE  -- 컬럼 순서가 맞아야한다.
+					FROM EMPLOYEE 
+					WHERE ENT_YN = 'Y'
+					AND SUBSTR(EMP_NO,8,1) ='2');
+			
+	-- 0913 4교시
+				
 -------------------------- 연습문제 -------------------------------
 -- 1. 노옹철 사원과 같은 부서, 같은 직급인 사원을 조회하시오. (단, 노옹철 사원은 제외)
 --    사번, 이름, 부서코드, 직급코드, 부서명, 직급명
+	
+	SELECT DEPT_TITLE, JOB_NAME
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	WHERE DEPT_TITLE ='총무부' AND JOB_NAME = '부사장'	;
+	
+				
+	SELECT EMP_ID, EMP_NAME, DEPT_CODE, JOB_CODE, DEPT_TITLE, JOB_NAME
+	FROM EMPLOYEE 
+	JOIN JOB USING(JOB_CODE)
+	LEFT JOIN DEPARTMENT ON (DEPT_CODE = DEPT_ID)
+	WHERE   (DEPT_CODE, JOB_CODE) = (SELECT DEPT_CODE, JOB_CODE
+									FROM EMPLOYEE 
+									WHERE EMP_NAME ='노옹철')
+									AND EMP_NAME != '노옹철';
 
+	--D9 J2 총무부, 부사장
 
 
 -- 2. 2000년도에 입사한 사원의 부서와 직급이 같은 사원을 조회하시오
 --    사번, 이름, 부서코드, 직급코드, 고용일
-
+		SELECT EMP_ID, EMP_NAME, DEPT_CODE, JOB_CODE, HIRE_DATE
+		FROM EMPLOYEE
+		WHERE (DEPT_CODE, JOB_CODE) =
+				(SELECT DEPT_CODE, JOB_CODE 
+			FROM EMPLOYEE 
+			WHERE EXTRACT (YEAR FROM HIRE_DATE) = 2000);
 
 
 -- 3. 77년생 여자 사원과 동일한 부서이면서 동일한 사수를 가지고 있는 사원을 조회하시오
 --    사번, 이름, 부서코드, 사수번호, 주민번호, 고용일     
-                  
+
+		SELECT DEPT_CODE, MANAGER_ID 
+		FROM EMPLOYEE 
+		WHERE SUBSTR(EMP_NO,8,1)= '2'
+		AND DEPT_CODE = 'D5'
+		AND MANAGER_ID = '207'
+		; 
+		-- D5, 207
+		
+SELECT EMP_ID, EMP_NAME, DEPT_CODE, MANAGER_ID, EMP_NO, HIRE_DATE
+FROM EMPLOYEE 
+WHERE 	(DEPT_CODE , MANAGER_ID ) = (SELECT DEPT_CODE, MANAGER_ID 
+		FROM EMPLOYEE 
+		WHERE SUBSTR(EMP_NO,1,2)= '77'
+		AND SUBSTR(EMP_NO,8,1)= '2');
+
+
+		SELECT DEPT_CODE, MANAGER_ID 
+		FROM EMPLOYEE 
+		WHERE SUBSTR(EMP_NO,1,2)= '77'
+		AND SUBSTR(EMP_NO,8,1)= '2';
+		
 
 
 
@@ -373,17 +472,26 @@ HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
 -- 단, 급여와 급여 평균은 만원단위로 계산하세요 TRUNC(컬럼명, -4)    
 
 -- 1) 급여를 200, 600만 받는 직원 (200만, 600만이 평균급여라 생각 할 경우)
-
+	SELECT EMP_ID, EMP_NAME, JOB_CODE , SALARY
+	FROM EMPLOYEE 
+	WHERE SALARY IN(2000000, 6000000);
 
 -- 2) 직급별 평균 급여
-
+	SELECT JOB_CODE, TRUNC(AVG(SALARY),-4)
+	FROM EMPLOYEE 
+	GROUP BY JOB_CODE  ;
 
 -- 3) 본인 직급의 평균 급여를 받고 있는 직원
-
-                  
-                
+SELECT EMP_ID, EMP_NAME, JOB_CODE , SALARY
+FROM EMPLOYEE 
+--WHERE (JOB_CODE, SALARY) IN(2000000, 6000000);
+          -- 다중열 			--다중 행
+WHERE (JOB_CODE, SALARY) IN(SELECT JOB_CODE, TRUNC(AVG(SALARY),-4)
+							FROM EMPLOYEE 
+							GROUP BY JOB_CODE  );
 
 -------------------------------------------------------------------------------
+ 	-- 0913 4교시 12시 20~30 후 설명
 
 -- 5. 상[호연]관 서브쿼리
 --    상관 쿼리는 메인쿼리가 사용하는 테이블값을 서브쿼리가 이용해서 결과를 만듦
@@ -392,6 +500,11 @@ HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
 -- 상관쿼리는 먼저 메인쿼리 한 행을 조회하고
 -- 해당 행이 서브쿼리의 조건을 충족하는지 확인하여 SELECT를 진행함
 
+	-- * 해석 순서가 기존 서브쿼리와 다르게
+	-- ** 메인쿼리 1행 -> 1행에 대한 서브쿼리
+	-- ** 메인쿼리 2행 -> 2행에 대한 서브쿼리
+	-- ** 메인쿼리 3행 -> 3행에 대한 서브쿼리
+	-- ** 메인 쿼리의 행의 수 만큼 서브쿼리가 생성되어 진행됨
 
 -- 사수가 있는 직원의 사번, 이름, 부서명, 사수사번 조회
 
@@ -399,15 +512,45 @@ HAVING SUM(SALARY) = (SELECT MAX(SUM(SALARY))
 
 -- 직급별 급여 평균보다 급여를 많이 받는 직원의 
 -- 이름, 직급코드, 급여 조회
+						
+-- 메인 쿼리						
+SELECT EMP_NAME, JOB_CODE, SALARY 
+FROM EMPLOYEE MAIN
+--WHERE SALARY > 8000000
+--AND JOB_CODE = 'J1'; -- 선동일일때  J1, 8000000이상인 사람? 
+					-- 송종기일때 48500000이상인 사람?만 출력
+WHERE SALARY > (SELECT AVG(SALARY) 
+				FROM EMPLOYEE SUB
+				WHERE SUB.JOB_CODE = MAIN.JOB_CODE);
+		-- J1 = SALARY 평균 8000000> 조회X,
+		-- J2 평균 4850000 > 송종기 조회됨
+		-- 
+J1	8000000
+J2	4850000
+J4	2330000
+J3	3600000
+J7	2017500
+J5	2820000
+J6	2624373.33
 
-
-
+-- 서브 쿼리
+	SELECT JOB_CODE , AVG(SALARY)
+	FROM EMPLOYEE 
+	GROUP BY JOB_CODE ;
+--0913 5교시 (다시 풀이)
 -- 부서별 입사일이 가장 빠른 사원의
 --    사번, 이름, 부서명(NULL이면 '소속없음'), 직급명, 입사일을 조회하고
 --    입사일이 빠른 순으로 조회하세요
 --    단, 퇴사한 직원은 제외하고 조회하세요
-
-
+SELECT EMP_ID, EMP_NAME, NVL(DEPT_TITLE, '소속없음') ,  JOB_NAME, HIRE_DATE
+FROM EMPLOYEE MAIN
+JOIN JOB USING(JOB_CODE)
+LEFT JOIN DEPARTMENT  ON (DEPT_CODE = DEPT_ID)
+WHERE ENT_YN = 'N'
+AND HIRE_DATE = (SELECT MIN(HIRE_DATE)
+				FROM EMPLOYEE SUB
+				WHERE SUB.DEPT_CODE = MAIN.DEPT_CODE)
+ORDER BY HIRE_DATE;
 
 ----------------------------------------------------------------------------------
 
