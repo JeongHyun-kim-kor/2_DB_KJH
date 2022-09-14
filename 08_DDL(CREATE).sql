@@ -77,12 +77,19 @@ SELECT * FROM USER_TABLES;
 
 
 -- 만든 테이블 확인
+	SELECT * FROM MEMBER;
 
+-- 0914 2교시
 
 -- 2. 컬럼에 주석 달기
 -- [표현식]
 -- COMMENT ON COLUMN 테이블명.컬럼명 IS '주석내용';
 
+COMMENT ON COLUMN "MEMBER".MEMBER_ID IS '회원 아이디';
+COMMENT ON COLUMN "MEMBER".MEMBER_PWD IS '회원 비밀번호';
+COMMENT ON COLUMN "MEMBER".MEMBER_NAME IS '회원 이름';
+COMMENT ON COLUMN "MEMBER".MEMBER_SSN IS '회원 주민등록번호';
+COMMENT ON COLUMN "MEMBER".ENROLL_DATE IS '회원 가입일';
 
 
 
@@ -90,30 +97,62 @@ SELECT * FROM USER_TABLES;
 -- 데이터 딕셔너리에 정의되어 있음
 SELECT * FROM USER_TABLES;
 
--- DESC문 : 테이블의 구조를 표시
-DESC MEMBER;
-
 
 -- MEMBER 테이블에 샘플 데이터 삽입
-
+--INSERT INTO 테이블명 VALUES(값1, 값2, ..);
+INSERT INTO "MEMBER" VALUES('MEM01', '123ABC', '홍길동', '991213-1234567', DEFAULT);
+																		-- SYSDATE
+-- * INSERT/UPDATE 시 컬럼 값으로 DEFAULT를 작성하면 
+-- 테이블 생성 시 해당 컬럼에 지정된 DEFAULT값으로 삽입이 된다.
 
 
 --  데이터  삽입 확인
-
-
+SELECT * FROM MEMBER;
+COMMIT;
 
 -- 추가 샘플 데이터 삽입
 -- 가입일 -> SYSDATE를 활용
+INSERT INTO "MEMBER" VALUES('MEM02', 'QWER1234', '김영희', '970506-2233445', SYSDATE);
 
 
 -- 가입일 -> DEFAULT 활용(테이블 생성 시 정의된 값이 반영됨)
+INSERT INTO "MEMBER" VALUES('MEM03', 'ASDF9876','박철수', '940416-1987654', DEFAULT);
 
 
 -- 가입일 -> INSERT 시 미작성 하는 경우 -> DEAFULT 값이 반영됨
+--INSERT INTO 테이블명(컬럼명1, 컬럼명2, 컬럼명3)
+--VALUES(값1, 값2, 값3)
 
+INSERT INTO "MEMBER" (MEMBER_ID, MEMBER_PWD, MEMBER_NAME)
+VALUES('MEM04', '1Q2W3E4R', '이지연');
 
+-- ** JDBC에서 날짜를 입력받았을 때 삽입하는 방법 **
+-- 2022-09-13 17:33:27
+INSERT INTO "MEMBER" VALUES('MEM05', 'PASS05', '김길동', '930303-1333333', /*날짜*/
+							TO_DATE('2022-09-13 17:33:27', 'YYYY-MM-DD HH24:MI:SS'));
+							-- ?(PLACEHOLDER)
 --  데이터  삽입 확인
+SELECT * FROM MEMBER;
+COMMIT;
 
+
+-- 중요 ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+-- ** NUMBER 타입의 문제점 ** 
+-- MEMBER2테이블(아이디, 비밀번호, 이름, 전화번호)
+CREATE TABLE MEMBER2(
+	MEMBER_ID VARCHAR2(20),
+	MEMBER_PWD VARCHAR2(20),
+	MEMBER_NAME VARCHAR2(30),
+	MEMBER_TEL NUMBER
+);
+
+INSERT INTO MEMBER2 VALUES('MEM01', 'PASS01', '고길동', 7712341234);
+INSERT INTO MEMBER2 VALUES('MEM02', 'PASS02', '고길순', 01045678901);
+--> NUMBER 타입 컬럼에 데이터 삽입 시
+--제일 앞에 0이 있으면 이를 자동으로 삭제함
+--> 전화번호, 주민등록번호처럼 숫자로만 되어있는데이터지만
+--  0으로 시작할 가능성이 있으면 CHAR, VARCHAR2같은 문자형을 사용
+SELECT * FROM MEMBER2;
 
 
 --------------------------------------------------------------------------------------------------------------------
@@ -123,12 +162,13 @@ DESC MEMBER;
 /*
     사용자가 원하는 조건의 데이터만 유지하기 위해서 특정 컬럼에 설정하는 제약.
     데이터 무결성 보장을 목적으로 함.
+	--> 중복 데이터 xxx
 
     + 입력 데이터에 문제가 없는지 자동으로 검사하는 목적
     + 데이터의 수정/삭제 가능여부 검사등을 목적으로 함 
         --> 제약조건을 위배하는 DML 구문은 수행할 수 없음!
     
-    제약조건 종류
+    제약조건 종류 [5가지]
     PRIMARY KEY, NOT NULL, UNIQUE, CHECK, FOREIGN KEY.
     
 */
@@ -148,10 +188,11 @@ SELECT * FROM USER_CONS_COLUMNS;
 -- 해당 컬럼에 반드시 값이 기록되어야 하는 경우 사용
 -- 삽입/수정시 NULL값을 허용하지 않도록 컬럼레벨에서 제한
 
+-- ** 컬럼 레벨 : 테이블 생성 시  컬럼을 정의하는 부분에 작성하는 것
 
 CREATE TABLE USER_USED_NN(
-    USER_NO , 
-    
+    USER_NO NUMBER NOT NULL, -- 사용자 번호 (모든 사용자는 사용자번호가 있어야 한다.
+    						--> 컬럼 레벨 제약 조건 설정
     USER_ID VARCHAR2(20) ,
     USER_PWD VARCHAR2(30) ,
     USER_NAME VARCHAR2(30) ,
