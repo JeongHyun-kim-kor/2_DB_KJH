@@ -201,6 +201,7 @@ CREATE TABLE USER_USED_NN(
     EMAIL VARCHAR2(50)
 );
 
+-- 0914 3교시
 
 INSERT INTO USER_USED_NN
 VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
@@ -213,24 +214,36 @@ VALUES(NULL, NULL, NULL, NULL, NULL, '010-1234-5678', 'hong123@kh.or.kr');
 --------------------------------------------------------------------------------------------------------------------
 
 
--- 2. UNIQUE 제약조건 
+-- 2. UNIQUE 제약조건 [유일하다]
 -- 컬럼에 입력 값에 대해서 중복을 제한하는 제약조건
 -- 컬럼레벨에서 설정 가능, 테이블 레벨에서 설정 가능
--- 단, UNIQUE 제약 조건이 설정된 컬럼에 NULL 값은 중복 삽입 가능.
+-- 단, UNIQUE 제약 조건이 설정된 컬럼에 <<NULL 값은 중복 삽입 가능.>>
 
+-- ** 테이블 레벨 : 테이블 생성 시 컬럼 정의가 끝난 후 마지막에 작성
+
+-- * 제약조건 지정 방법
+-- 1) 컬럼 레벨 : [CONSTRAINT 제약조건명] 제약조건
+-- 2) 테이블 레벨 : [CONSTRAINT 제약조건명] 제약조건(컬럼명)
 
 -- UNIQUE 제약 조건 테이블 생성
 CREATE TABLE USER_USED_UK(
     USER_NO NUMBER,
-    USER_ID VARCHAR2(20) , 
-    
+--    USER_ID VARCHAR2(20) UNIQUE, -- 컬럼 레벨(제약조건명 미지정)
+--    USER_ID VARCHAR2(20) CONSTRAINT USER_ID_U UNIQUE,
+    					-- 컬럼 레벨(제약조건명 지정함)
+    USER_ID VARCHAR2(20) ,
     USER_PWD VARCHAR2(30) ,
     USER_NAME VARCHAR2(30),
     GENDER VARCHAR2(10),
     PHONE VARCHAR2(30),
-    EMAIL VARCHAR2(50)
-
+    EMAIL VARCHAR2(50),
+	/* 테이블 레벨*/
+--    UNIQUE(USER_ID) -- 테이블 레벨(제약조건 미지정)
+	CONSTRAINT USER_ID_U UNIQUE(USER_ID) -- 테이블 레벨(제약조건 지정);
 );
+
+DROP TABLE USER_USED_UK; -- 테이블 삭제
+
 
 
 INSERT INTO USER_USED_UK
@@ -239,6 +252,8 @@ VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.o
 INSERT INTO USER_USED_UK
 VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
 --> 같은 아이디인 데이터가 이미 테이블에 있으므로 UNIQUE 제약 조건에 위배되어 오류발생
+
+-- ORA-00001: 무결성 제약 조건(KH_KJH.USER_ID_U)에 위배됩니다.
 
 INSERT INTO USER_USED_UK
 VALUES(1, NULL, 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
@@ -256,7 +271,8 @@ SELECT  * FROM USER_USED_UK;
 SELECT UCC.TABLE_NAME, UCC.COLUMN_NAME, UC.CONSTRAINT_TYPE
 FROM USER_CONSTRAINTS UC, USER_CONS_COLUMNS UCC
 WHERE UCC.CONSTRAINT_NAME = UC.CONSTRAINT_NAME
-AND UCC.CONSTRAINT_NAME = '제약조건명';
+--AND UCC.CONSTRAINT_NAME = '제약조건명';
+AND UCC.CONSTRAINT_NAME = 'USER_ID U';
 
 
 ---------------------------------------
@@ -264,6 +280,11 @@ AND UCC.CONSTRAINT_NAME = '제약조건명';
 
 -- UNIQUE 복합키
 -- 두 개 이상의 컬럼을 묶어서 하나의 UNIQUE 제약조건을 설정함
+-- 두 컬럼이 모두 해당되야만!
+
+-- * 복합키 지정은 테이블 레벨만 가능하다! *
+-- * 복합키는 지정된 모든 컬럼의 값이 같을 때 위배된다.
+
 CREATE TABLE USER_USED_UK2(
     USER_NO NUMBER,
     USER_ID VARCHAR2(20),
@@ -271,26 +292,34 @@ CREATE TABLE USER_USED_UK2(
     USER_NAME VARCHAR2(30),
     GENDER VARCHAR2(10),
     PHONE VARCHAR2(30),
-    EMAIL VARCHAR2(50)
-  
+    EMAIL VARCHAR2(50),
+    -- 테이블 레벨 복합키 지정
+    CONSTRAINT USER_ID_NAME_U UNIQUE(USER_ID, USER_NAME) -- 이런식으로 이름지정하겠다
 );
+  
+--     USER_ID    USER_NAME
+--    	USER 01    홍길동
+--    	USER 02    홍길동
+--    	USER 01    김길동
+--    	USER 01    홍길동
+--    1,2 중복 X 아이디가 다름
+--    1,3 중복 X 이름이 다름
+--    4는 중복 0 , 둘다여야만 중복처리
 
 
 INSERT INTO USER_USED_UK2
 VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
-
-INSERT INTO USER_USED_UK2
-VALUES(2, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
---> USER_NO가 다름
 
 INSERT INTO USER_USED_UK2
 VALUES(2, 'user02', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
---> USER_ID가 다름
+
 
 INSERT INTO USER_USED_UK2
-VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
---> 여러 컬럼을 묶어서 UNIQUE 제약 조건이 설정되어 있으면 
--- 두 컬럼이 모두 중복되는 값일 경우에만 오류 발생
+VALUES(3, 'user01', 'pass01', '고길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
+
+
+INSERT INTO USER_USED_UK2
+VALUES(4, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr');
 
 SELECT * FROM USER_USED_UK2;
 
@@ -301,7 +330,9 @@ SELECT * FROM USER_USED_UK2;
 
 -- 테이블에서 한 행의 정보를 찾기위해 사용할 컬럼을 의미함
 -- 테이블에 대한 식별자(IDENTIFIER) 역할을 함
--- NOT NULL + UNIQUE 제약조건의 의미
+
+-- NOT NULL + UNIQUE 제약조건의 의미 -> 중복되지 않는 값이 필수로 존재해야 함.
+
 -- 한 테이블당 한 개만 설정할 수 있음
 -- 컬럼레벨, 테이블레벨 둘다 설정 가능함
 -- 한 개 컬럼에 설정할 수도 있고, 여러개의 컬럼을 묶어서 설정할 수 있음
