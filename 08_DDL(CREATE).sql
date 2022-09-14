@@ -339,15 +339,18 @@ SELECT * FROM USER_USED_UK2;
 
 
 CREATE TABLE USER_USED_PK(
-    USER_NO NUMBER ,
-    
+    USER_NO NUMBER CONSTRAINT USER_NO_PK PRIMARY KEY , -- 컬럼 레벨
+    				-- 제약조건명 지정 O 
     USER_ID VARCHAR2(20) UNIQUE,
     USER_PWD VARCHAR2(30) NOT NULL,
     USER_NAME VARCHAR2(30),
     GENDER VARCHAR2(10),
     PHONE VARCHAR2(30),
     EMAIL VARCHAR2(50)
-
+	-- 테이블 레벨
+--    , PRIMARY KEY(USER_NO)
+--    , CONSTRAINT USER_NO_PK PRIMARY KEY(USER_NO)
+    
 );
 
 INSERT INTO USER_USED_PK
@@ -356,15 +359,15 @@ VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.o
 INSERT INTO USER_USED_PK
 VALUES(1, 'user02', 'pass02', '이순신', '남', '010-5678-9012', 'lee123@kh.or.kr');
 --> 기본키 중복으로 오류
-
+-- ORA-00001: 무결성 제약 조건(KH_KJH.USER_NO_PK)에 위배됩니다
 INSERT INTO USER_USED_PK
 VALUES(NULL, 'user03', 'pass03', '유관순', '여', '010-9999-3131', 'yoo123@kh.or.kr');
 --> 기본키가 NULL 이므로 오류
-
+-- ORA-01400: NULL을 ("KH_KJH"."USER_USED_PK"."USER_NO") 안에 삽입할 수 없습니다
 
 ---------------------------------------
 
--- PRIMARY KEY 복합키 (테이블 레벨만 가능)
+-- PRIMARY KEY 복합키 (테이블 레벨만 가능) @@@@@@@@@@@@
 CREATE TABLE USER_USED_PK2(
     USER_NO NUMBER,
     USER_ID VARCHAR2(20),
@@ -402,7 +405,7 @@ VALUES(NULL, 'user01', 'pass01', '신사임당', '여', '010-9999-9999', 'sin123
 
 -- 참조(REFERENCES)된 다른 테이블의 컬럼이 제공하는 값만 사용할 수 있음
 -- FOREIGN KEY제약조건에 의해서 테이블간의 관계(RELATIONSHIP)가 형성됨
--- 제공되는 값 외에는 NULL을 사용할 수 있음
+-- 제공되는 값 외에는 NULL(참조하는 값이 없음)을 사용할 수 있음
 
 -- 컬럼레벨일 경우
 -- 컬럼명 자료형(크기) [CONSTRAINT 이름] REFERENCES 참조할 테이블명 [(참조할컬럼)] [삭제룰]
@@ -411,7 +414,8 @@ VALUES(NULL, 'user01', 'pass01', '신사임당', '여', '010-9999-9999', 'sin123
 -- [CONSTRAINT 이름] FOREIGN KEY (적용할컬럼명) REFERENCES 참조할테이블명 [(참조할컬럼)] [삭제룰]
 
 -- * 참조될 수 있는 컬럼은 PRIMARY KEY컬럼과, UNIQUE 지정된 컬럼만 외래키로 사용할 수 있음
---참조할 테이블의 참조할 컬럼명이 생략이 되면, PRIMARY KEY로 설정된 컬럼이 자동 참조할 컬럼이 됨
+-- 참조할 테이블의 참조할 컬럼명이 생략이 되면,
+-- PRIMARY KEY로 설정된 컬럼이 자동 참조할 컬럼이 됨
 
 CREATE TABLE USER_GRADE(
   GRADE_CODE NUMBER PRIMARY KEY,
@@ -432,10 +436,17 @@ CREATE TABLE USER_USED_FK(
   GENDER VARCHAR2(10),
   PHONE VARCHAR2(30),
   EMAIL VARCHAR2(50),
-  GRADE_CODE NUMBER
-  
+  GRADE_CODE NUMBER REFERENCES USER_GRADE /*(GRADE CODE) */ -- 컬럼 레벨!!
+  									--E(참조할 컬럼명)
+  									-- 컬럼명 미작성시 USER_GRADE테이블의 PK를 자동 참조
+--[CONSTRAINT 이름] FOREIGN KEY (적용할컬럼명) REFERENCES 참조할테이블명 [(참조할컬럼)] [삭제룰]
+  										
+  -- 테이블 레벨!!
+--  ,CONSTRAINT GRADE_CODE_FK FOREIGN KEY(GRADE_CODE) REFERENCES USER_GRADE
+  							-- FOREIGN KEY라는 단어는 테이블 레벨에서만 사용 가능
 );
 
+COMMIT;
 
 INSERT INTO USER_USED_FK
 VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr', 10);
@@ -470,8 +481,17 @@ SELECT * FROM USER_USED_FK;
 -- 1) ON DELETE RESTRICTED(삭제 제한)로 기본 지정되어 있음
 -- FOREIGN KEY로 지정된 컬럼에서 사용되고 있는 값일 경우
 -- 제공하는 컬럼의 값은 삭제하지 못함
+DELETE FROM USER_GRADE
+WHERE GRADE_CODE =30;
+
+
 
 -- GRADE_CODE 중 20은 외래키로 참조되고 있지 않으므로 삭제가 가능함.
+DELETE FROM USER_GRADE
+WHERE GRADE_CODE =20;
+
+ROLLBACK;
+
 
 
 
