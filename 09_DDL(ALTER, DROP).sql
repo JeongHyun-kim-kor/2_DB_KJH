@@ -16,7 +16,7 @@
 -- [작성법]
 -- 1) 추가 : ALTER TABLE 테이블명
 --           ADD [CONSTRAINT 제약조건명] 제약조건(지정할 컬럼명)
---			[REFERENCES 테이블명[(컬럼명)]; --< FK인 경우 추가
+--			[REFERENCES 테이블명[(컬럼명)]; --> FK인 경우 추가
 
 --2) 삭제 : ALTER TABLE 테이블명
 -- 		    DROP CONSTRAINT 제약조건명;
@@ -199,7 +199,10 @@ DROP TABLE TB1 CASCADE CONSTRAINTS;
  --> ALTER, DROP을 신중하게 진행해야함.
 
 -- 2) DDL과 DML구문을 섞어서 수행하지 말아야 한다.
- --> DDL은 수행 시 존재하고있는 트랜잭션을 모두 
+ --> DDL은 수행 시 존재하고있는 트랜잭션을 모두 DB에 강제 COMMIT 시킴
+--> DDL이 종료된 후 DML구문을 수행할 수 있도록 권장!
+
+
 SELECT * FROM TB2;
 COMMIT;
 

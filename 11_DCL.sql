@@ -86,19 +86,61 @@ CREATE TABLE TB_TEST(
 	CONTENT VARCHAR2(100)
 );
 
+----------------------------------------------------------------
+-- 0915 7교시
 
+-- ROLE(역할) : 권한 묶음
+--> 묶어둔 권한(ROLE) 특정 계정에 부여 
+--> 해당 계정은 지정된 권한을 이용해서 특정 역할을 갖게 된다.
 
+-- (SYS) sample 계정에 CONNECT, RESOURCE 부여
+GRANT CONNECT, RESOURCE TO	kjh_sample;
+-- CONNECT  : DB 접속 관련 권한을 묶어둔 ROLE
+-- RESOURCE : DB 사용을 위한 기본 객체 생성 권한을 묶어둔 ROLE
 
+----------------------------------------------------------------
 
+-- * 객체 권한 * 
 
+--   kh_kjh   /   kjh_sample 사용자 계정끼리 서로 객체 접근 권한 부여
 
+-- 1. (sample) kh_kjh 계정의 EMPLOYEE 테이블 조회
+	SELECT * FROM KH.KJH.EMPLOYEE;
+--> 접근 권한이 없어서 조회 불가
 
+-- 2. (kh) kjh_sample 계정에 EMPLOYEE테이블 조회 권한 부여
 
+-- [객체 권한 부여 방법]
+-- GRANT 객체 권한 ON 객체명 TO 사용자명;
 
+GRANT SELECT ON EMPLOYEE TO kjh_sample;
 
+--3. (sample) 다시 kh_kjh.EMPLOYEE 조회
+	SELECT * FROM kh_kjh.EMPLOYEE;
 
+-- KH계정(운영용 DB
+-- SAMPLE계정(테스트 DB)
+--> 운영용DB의 데이터를 복사
+--> 테스트
 
+-- 4. (sample) kh_kjh.EMPLOYEE 테이블을 복사한 테이블 생성
+	CREATE TABLE EMP_SAMPLE
+	AS SELECT * FROM kh_kjh.EMPLOYEE;
 
+	SELECT * FROM EMP_SAMPLE;
+--> 복사본이므로 원본 영향 X
+
+-- 5. (kh) sample 계정에 부여한 EMPLOYEE 테이블 조회 권한 회수(REVOKE)
+	
+-- [권한 회수 작성법]
+-- REVOKE 객체권한 ON 객체명 FROM 사용자명;
+
+REVOKE SELECT ON EMPLOYEE FROM kjh_sample;
+
+-- 6. (sample)권한 회수 확인
+	SELECT * FROM kh_kjh.EMPLOYEE;
+-- ORA-00942: 테이블 또는 뷰가 존재하지 않습니다
+	SELECT * FROM EMP_SAMPLE;
 
 
 
