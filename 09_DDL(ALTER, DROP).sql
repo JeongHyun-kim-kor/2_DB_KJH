@@ -148,21 +148,69 @@ ALTER TABLE DEPT_COPY RENAME TO DCOPY;
 SELECT * FROM DEPT_COPY; --> 오류
 SELECT * FROM DCOPY ;
 
+---------------------------------------------------
+-- 0915 3교시
 
+-- 4. 테이블 삭제
+-- DROP TABLE 테이블명 [CASCADE CONSTRAINTS];
 
+-- 1)  관계가 형성되지 않은 테이블(DCOPY)삭제
+DROP TABLE DCOPY;
 
+-- 2) 관계가 형성된 테이블 삭제
+CREATE TABLE TB1(
+	TB1_PK NUMBER PRIMARY KEY,
+	TB1_COL NUMBER
+);
 
+CREATE TABLE TB2(
+	TB2_PK NUMBER PRIMARY KEY,
+	TB2_COL NUMBER REFERENCES TB1
+);
 
+-- TB1에 샘플 데이터 삽입
+INSERT INTO TB1 VALUES(1, 100);
+INSERT INTO TB1 VALUES(2, 200);
+INSERT INTO TB1 VALUES(3, 300);
+COMMIT;
 
+-- TB2에 샘플데이터 삽입
+INSERT INTO TB2 VALUES(11, 1);
+INSERT INTO TB2 VALUES(12, 2);
+INSERT INTO TB2 VALUES(13, 3);
+INSERT INTO TB2 VALUES(14, 4);
 
+-- TB1 삭제
+DROP TABLE TB1;
+--  ORA-02449: 외래 키에 의해 참조되는 고유/기본 키가 테이블에 있습니다
+--> 해결방법
+-- 1) 자식, 부모 테이블 순서로 삭제
+-- 2) ALTER을 이용해 FK제약조건 삭제 후 TB1 삭제
+-- 3) DROP TABLE 삭제 옵션 CASCADE CONSTRAINTS 사용
+	--> CASCADE CONSTRAINTS : 삭제하려는 테이블과 연결된 FK제약 조건을 모두 삭제
+DROP TABLE TB1 CASCADE CONSTRAINTS;
+-> 삭제 성공
 
+----------------------------------------------------
 
+/* DDL 주의사항 */ 
 
+-- 1) DDL은 COMMIT / ROLLBACK이 되지 않는다.
+ --> ALTER, DROP을 신중하게 진행해야함.
 
+-- 2) DDL과 DML구문을 섞어서 수행하지 말아야 한다.
+ --> DDL은 수행 시 존재하고있는 트랜잭션을 모두 
+SELECT * FROM TB2;
+COMMIT;
 
+INSERT INTO TB2 VALUES(14,4);
+INSERT INTO TB2 VALUES(15,5);
+SELECT * FROM TB2;
 
+-- 컬럼명 변경 DDL
+ALTER TABLE TB2 RENAME COLUMN TB2_COL TO TB2_COLCOL
 
-
+ROLLBACK;
 
 
 
