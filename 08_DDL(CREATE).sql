@@ -517,7 +517,6 @@ CREATE TABLE USER_USED_FK2(
   GRADE_CODE NUMBER CONSTRAINT GRADE_CODE_FK2 REFERENCES USER_GRADE ON DELETE SET NULL );
   																	 /* 삭제 옵션 */
 
-
 --샘플 데이터 삽입
 INSERT INTO USER_USED_FK2
 VALUES(1, 'user01', 'pass01', '홍길동', '남', '010-1234-5678', 'hong123@kh.or.kr', 10);
