@@ -228,9 +228,9 @@ VALUES(NULL, NULL, NULL, NULL, NULL, '010-1234-5678', 'hong123@kh.or.kr');
 -- UNIQUE 제약 조건 테이블 생성
 CREATE TABLE USER_USED_UK(
     USER_NO NUMBER,
---    USER_ID VARCHAR2(20) UNIQUE, -- 컬럼 레벨(제약조건명 미지정)
+--    USER_ID VARCHAR2(20) UNIQUE, -- 컬럼 레벨 >>(제약조건명 미지정)
 --    USER_ID VARCHAR2(20) CONSTRAINT USER_ID_U UNIQUE,
-    					-- 컬럼 레벨(제약조건명 지정함)
+    				--   >> 컬럼 레벨(제약조건명 지정함)
     USER_ID VARCHAR2(20) ,
     USER_PWD VARCHAR2(30) ,
     USER_NAME VARCHAR2(30),
@@ -296,7 +296,7 @@ CREATE TABLE USER_USED_UK2(
     -- 테이블 레벨 복합키 지정
     CONSTRAINT USER_ID_NAME_U UNIQUE(USER_ID, USER_NAME) -- 이런식으로 이름지정하겠다
 );
-  
+  SELECT * FROM USER_USED_UK2;
 --     USER_ID    USER_NAME
 --    	USER 01    홍길동
 --    	USER 02    홍길동
